@@ -16,7 +16,7 @@ import (
 var Version = "?"
 
 func main() {
-	// creates the in-cluster config
+	// Creates the in-cluster config.
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		panic(err.Error())
