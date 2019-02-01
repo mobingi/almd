@@ -13,6 +13,8 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
+var Version = "?"
+
 func main() {
 	// creates the in-cluster config
 	config, err := rest.InClusterConfig()
