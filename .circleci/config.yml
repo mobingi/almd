@@ -10,7 +10,6 @@ jobs:
     - run:
         name: Build and push Docker image
         command: |
-          # docker build -t ariv3ra/$IMAGE_NAME:$TAG .
-          # echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
-          # docker push ariv3ra/$IMAGE_NAME:$TAG
-          echo "hello"
+          docker build -t mobingi/oceand:${CIRCLE_SHA1} .
+          echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
+          docker push mobingi/oceand:${CIRCLE_SHA1}
