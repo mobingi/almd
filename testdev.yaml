@@ -1,0 +1,31 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oceand
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: oceand
+  replicas: 1
+  revisionHistoryLimit: 5
+  template:
+    metadata:
+      labels:
+        app: oceand
+    spec:
+      serviceAccountName: mobingi
+      containers:
+      - name: oceand
+        image: mobingi/oceand:60a3054c21fc021f8ef56ba4f84f2582042cc804
+        resources:
+          requests:
+            cpu: 100m
+            memory: 300Mi
+        imagePullPolicy: Always
+        env:
+        - name: GET_HOSTS_FROM
+          value: dns
+        ports:
+        - containerPort: 8080
