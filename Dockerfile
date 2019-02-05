@@ -11,4 +11,4 @@ RUN apt-get update -y && apt-get install -y ca-certificates
 WORKDIR /oceand/
 COPY --from=0 /go/src/github.com/mobingi/oceand .
 ENTRYPOINT ["/oceand/oceand"]
-# CMD ["serve", "--logtostderr", "--cache-dir=/var/run/vendord", "--production=true"]
+CMD ["run", "--logtostderr"]
