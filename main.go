@@ -62,6 +62,7 @@ func testK8s() {
 		klog.Infof("There are %d pods in the cluster\n", len(pods.Items))
 
 		// Examples for error handling:
+		//
 		// - Use helper functions like e.g. errors.IsNotFound()
 		// - And/or cast to StatusError and use its properties like e.g. ErrStatus.Message
 		_, err = clientset.CoreV1().Pods("default").Get("example-xxxxx", metav1.GetOptions{})
