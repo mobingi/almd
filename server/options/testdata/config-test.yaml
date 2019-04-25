@@ -1,0 +1,4 @@
+id: rootuser-subuser
+token: token
+templateName: template name
+clusterName: k8s cluster name

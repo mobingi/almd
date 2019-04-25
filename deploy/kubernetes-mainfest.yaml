@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: oceand
+  namespace: kube-system
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: oceand
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: ""
+subjects:
+- kind: ServiceAccount
+  name: oceand
+  namespace: "kube-system"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oceand
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: oceand
+  replicas: 1
+  revisionHistoryLimit: 5
+  template:
+    metadata:
+      labels:
+        app: oceand
+    spec:
+      serviceAccountName: oceand
+      containers:
+      - name: oceand
+        image: n1ce37/oceand:v1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 300Mi

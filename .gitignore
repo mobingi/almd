@@ -12,3 +12,5 @@
 *.out
 oceand
 bin/
+
+.vscode
