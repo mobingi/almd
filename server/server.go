@@ -1,6 +1,8 @@
 package server
 
 import (
+	"log"
+
 	"github.com/spf13/cobra"
 
 	"github.com/mobingi/oceand/pkg/util"
@@ -22,9 +24,12 @@ func NewOceandCommand() *cobra.Command {
 }
 
 func run() error {
+	log.Print("running")
 	configPath := util.ReadEnvOrDie(configPathEnv)
+	log.Print("config path:", configPath)
 	o, err := options.NewOptionsFromFile(configPath)
 	if err != nil {
+		log.Print("read config err:", err)
 		return err
 	}
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/mobingilabs/ouchan/services/oceand/server"
+	"github.com/mobingi/oceand/server"
 )
 
 func main() {

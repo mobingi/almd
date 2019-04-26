@@ -14,10 +14,20 @@ import (
 	"github.com/mobingi/oceand/pkg/util"
 )
 
-type postBody struct {
-	Pods        *corev1.PodList
-	Services    *corev1.ServiceList
-	Deployments *appsv1.DeploymentList
+const (
+	MessageCodeResources = "MESSAGE_CODE_LIST_RESOURCES"
+)
+
+type postPayload struct {
+	MessageCode string `json:"code"`
+
+	ID           string `json:"id"`
+	TemplateName string `json:"templateName"`
+	ClusterName  string `json:"clusterName"`
+
+	Pods        []corev1.Pod        `json:"pods,omitempty"`
+	Deployments []appsv1.Deployment `json:"deployments,omitempty"`
+	Services    []corev1.Service    `json:"services,omitempty"`
 }
 
 const backendURLEnv = "BACKEND_URL"
@@ -33,15 +43,16 @@ func report(client clientset.Interface, eventChan chan struct{}, token string) {
 	}
 }
 
-func newPostBody(client clientset.Interface) *postBody {
+func newPostBody(client clientset.Interface) *postPayload {
 	pods, _ := client.CoreV1().Pods(corev1.NamespaceAll).List(metav1.ListOptions{})
 	services, _ := client.CoreV1().Services(corev1.NamespaceAll).List(metav1.ListOptions{})
 	deployments, _ := client.AppsV1().Deployments(corev1.NamespaceAll).List(metav1.ListOptions{})
 	fmt.Println(pods)
-	return &postBody{
-		Pods:        pods,
-		Services:    services,
-		Deployments: deployments,
+	return &postPayload{
+		MessageCode: MessageCodeResources,
+		Pods:        pods.Items,
+		Services:    services.Items,
+		Deployments: deployments.Items,
 	}
 }
 
@@ -57,6 +68,10 @@ func sendData(backendURL, token string, data []byte) error {
 	req.Header = header
 
 	_, err = http.DefaultClient.Do(req)
+	// TODO rewrite it
+	if err != nil {
+		fmt.Println("error:", err)
+	}
 
 	return err
 }
