@@ -17,8 +17,8 @@ rules:
   - ""
   resources:
   - pods
-  - service
-  - deployment
+  - services
+  - deployments
   verbs:
   - get
 ---
