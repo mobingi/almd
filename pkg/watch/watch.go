@@ -49,7 +49,7 @@ func newClient() (clientset.Interface, error) {
 	const (
 		tokenFile  = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 		rootCAFile = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
-		host       = "kubernetes"
+		host       = "kubernetes.default"
 		port       = "443"
 	)
 
