@@ -2,6 +2,7 @@ package watch
 
 import (
 	"io/ioutil"
+	"log"
 	"net"
 
 	corev1 "k8s.io/api/core/v1"
@@ -26,6 +27,7 @@ func Watch(id, token string) error {
 	httpClient := newHTTPClient()
 	backendURL := pkgutil.ReadEnvOrDie(backendURLEnv)
 	accessToken := getAccessToken(httpClient, backendURL, id, token)
+	log.Print("get access token sucess")
 
 	podEventChan, serviceEventChan, deploymentEventChan, err := newEventChans(client)
 	if err != nil {

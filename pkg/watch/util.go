@@ -1,17 +1,17 @@
 package watch
 
 import (
-	"log"
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 )
 
-const retryInterval = 5 * time.Second
+const retryInterval = 10 * time.Second
 
 func getAccessToken(c *http.Client, backendURL, id, token string) string {
 	dataJSON := map[string]string{
@@ -23,7 +23,7 @@ func getAccessToken(c *http.Client, backendURL, id, token string) string {
 	post := func() (string, error) {
 		resp, err := c.Post(backendURL, "application/json", bytes.NewReader(data))
 		if err != nil {
-			return "", err
+			return "", errors.New("get access token,post error:" + err.Error())
 		}
 		defer resp.Body.Close()
 
@@ -34,6 +34,7 @@ func getAccessToken(c *http.Client, backendURL, id, token string) string {
 
 		respJSON := make(map[string]string)
 		if err := json.Unmarshal(data, respJSON); err != nil {
+			log.Print("resp:", string(data))
 			return "", err
 		}
 
