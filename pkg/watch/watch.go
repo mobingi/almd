@@ -2,7 +2,6 @@ package watch
 
 import (
 	"io/ioutil"
-	"log"
 	"net"
 
 	corev1 "k8s.io/api/core/v1"
@@ -10,24 +9,28 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
+	pkgutil "github.com/mobingi/oceand/pkg/util"
 )
 
-const chanSize = 10
+const chanSize = 100
 
 // Watch will watch pod,service,deployment from apiserver and report to backend server
 // it will return immediately
-func Watch(token string) error {
+func Watch(id, token string) error {
 	client, err := newClient()
 	if err != nil {
 		return err
 	}
-	log.Print("new client sucess")
+
+	httpClient := newHTTPClient()
+	backendURL := pkgutil.ReadEnvOrDie(backendURLEnv)
+	accessToken := getAccessToken(httpClient, backendURL, id, token)
 
 	podEventChan, serviceEventChan, deploymentEventChan, err := newEventChans(client)
 	if err != nil {
 		return err
 	}
-	log.Print("new event chans sucess")
 
 	eventChan := make(chan struct{}, chanSize)
 	go func() {
@@ -43,11 +46,12 @@ func Watch(token string) error {
 		}
 	}()
 
-	go report(client, eventChan, token)
+	go report(client, httpClient, eventChan, backendURL, accessToken)
 
 	return nil
 }
 
+// new kubernetes client, use serviceaccount for auth
 func newClient() (clientset.Interface, error) {
 	const (
 		tokenFile  = "/var/run/secrets/kubernetes.io/serviceaccount/token"
@@ -75,17 +79,14 @@ func newClient() (clientset.Interface, error) {
 func newEventChans(client clientset.Interface) (<-chan watch.Event, <-chan watch.Event, <-chan watch.Event, error) {
 	podWatcher, err := client.CoreV1().Pods(corev1.NamespaceAll).Watch(metav1.ListOptions{})
 	if err != nil {
-		log.Print("create pods wathcer failed")
 		return nil, nil, nil, err
 	}
 	serviceWatcher, err := client.CoreV1().Services(corev1.NamespaceAll).Watch(metav1.ListOptions{})
 	if err != nil {
-		log.Print("create service wathcer failed")
 		return nil, nil, nil, err
 	}
 	deploymentWatcher, err := client.AppsV1().Deployments(corev1.NamespaceAll).Watch(metav1.ListOptions{})
 	if err != nil {
-		log.Print("create deployment wathcer failed")
 		return nil, nil, nil, err
 	}
 

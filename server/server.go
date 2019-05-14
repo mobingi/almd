@@ -33,7 +33,7 @@ func run() error {
 		return err
 	}
 
-	if err := watch.Watch(o.Token); err != nil {
+	if err := watch.Watch(o.ID, o.Token); err != nil {
 		return err
 	}
 

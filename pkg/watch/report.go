@@ -2,22 +2,19 @@ package watch
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
-
-	"github.com/mobingi/oceand/pkg/util"
 )
 
 const (
 	MessageCodeResources = "MESSAGE_CODE_LIST_RESOURCES"
+	backendURLEnv        = "BACKEND_URL"
 )
 
 type postPayload struct {
@@ -32,27 +29,17 @@ type postPayload struct {
 	Services    []corev1.Service    `json:"services,omitempty"`
 }
 
-const backendURLEnv = "BACKEND_URL"
-
-func report(client clientset.Interface, eventChan chan struct{}, token string) {
-	backendURL := util.ReadEnvOrDie(backendURLEnv)
-	c := http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		},
-	}
-
+func report(client clientset.Interface, httpClient *http.Client, eventChan chan struct{}, backendURL, token string) {
 	for {
 		select {
 		case <-eventChan:
 			data, _ := json.Marshal(newPostBody(client))
 			req := createRequest(backendURL, token, data)
-			_, err := c.Do(req)
-			if err != nil {
-				panic(err)
-			} else {
-				log.Println("report sucess")
+			post := func() (string, error) {
+				_, err := httpClient.Do(req)
+				return "", err
 			}
+			util(post)
 		}
 	}
 }
