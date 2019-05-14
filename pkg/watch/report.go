@@ -2,8 +2,10 @@ package watch
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -34,11 +36,23 @@ const backendURLEnv = "BACKEND_URL"
 
 func report(client clientset.Interface, eventChan chan struct{}, token string) {
 	backendURL := util.ReadEnvOrDie(backendURLEnv)
+	c := http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+
 	for {
 		select {
 		case <-eventChan:
 			data, _ := json.Marshal(newPostBody(client))
-			sendData(backendURL, token, data)
+			req := createRequest(backendURL, token, data)
+			_, err := c.Do(req)
+			if err != nil {
+				panic(err)
+			} else {
+				log.Println("report sucess")
+			}
 		}
 	}
 }
@@ -47,7 +61,6 @@ func newPostBody(client clientset.Interface) *postPayload {
 	pods, _ := client.CoreV1().Pods(corev1.NamespaceAll).List(metav1.ListOptions{})
 	services, _ := client.CoreV1().Services(corev1.NamespaceAll).List(metav1.ListOptions{})
 	deployments, _ := client.AppsV1().Deployments(corev1.NamespaceAll).List(metav1.ListOptions{})
-	fmt.Println(pods)
 	return &postPayload{
 		MessageCode: MessageCodeResources,
 		Pods:        pods.Items,
@@ -56,7 +69,7 @@ func newPostBody(client clientset.Interface) *postPayload {
 	}
 }
 
-func sendData(backendURL, token string, data []byte) error {
+func createRequest(backendURL, token string, data []byte) *http.Request {
 	authorzation := fmt.Sprintf("Bearer %s", token)
 	header := map[string][]string{
 		"Authorization": {authorzation},
@@ -67,11 +80,5 @@ func sendData(backendURL, token string, data []byte) error {
 	}
 	req.Header = header
 
-	_, err = http.DefaultClient.Do(req)
-	// TODO rewrite it
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-
-	return err
+	return req
 }

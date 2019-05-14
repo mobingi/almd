@@ -5,29 +5,31 @@ metadata:
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
   name: oceand
-  namespace: kube-system
-  labels:
-    kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: Reconcile
+  #labels:
+    #kubernetes.io/cluster-service: "true"
+    #addonmanager.kubernetes.io/mode: Reconcile
 rules:
 - apiGroups:
   - ""
+  - "apps"
   resources:
   - pods
   - services
   - deployments
   verbs:
   - get
+  - watch
+  - list
 ---
-kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
 metadata:
   name: oceand
 roleRef:
-  kind: Role
+  kind: ClusterRole
   name: oceand
   apiGroup: ""
 subjects:
@@ -47,6 +49,17 @@ data:
     templateName: templateName
     clusterName: clusterName
 ---
+#apiVersion: networking.k8s.io/v1
+#kind: NetworkPolicy
+#metadata:
+#  name: allow-all
+#spec:
+#  podSelector: {}
+#  egress:
+#  - {}
+#  policyTypes:
+#  - Egress
+#---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -66,15 +79,15 @@ spec:
       serviceAccountName: oceand
       containers:
       - name: oceand
-        image: n1ce37/oceand:v1
+        image: n1ce37/oceand:latest
         resources:
           requests:
             cpu: 100m
             memory: 300Mi
         volumeMounts:
-        - name: oceand
+        - name: config-volume
           mountPath: /etc/oceand/config
       volumes:
-        - name: oceand
+        - name: config-volume
           configMap:
             name: oceand

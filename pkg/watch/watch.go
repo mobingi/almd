@@ -2,6 +2,7 @@ package watch
 
 import (
 	"io/ioutil"
+	"log"
 	"net"
 
 	corev1 "k8s.io/api/core/v1"
@@ -20,11 +21,13 @@ func Watch(token string) error {
 	if err != nil {
 		return err
 	}
+	log.Print("new client sucess")
 
 	podEventChan, serviceEventChan, deploymentEventChan, err := newEventChans(client)
 	if err != nil {
 		return err
 	}
+	log.Print("new event chans sucess")
 
 	eventChan := make(chan struct{}, chanSize)
 	go func() {
@@ -49,7 +52,7 @@ func newClient() (clientset.Interface, error) {
 	const (
 		tokenFile  = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 		rootCAFile = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
-		host       = "kubernetes"
+		host       = "kubernetes.default"
 		port       = "443"
 	)
 
@@ -72,14 +75,17 @@ func newClient() (clientset.Interface, error) {
 func newEventChans(client clientset.Interface) (<-chan watch.Event, <-chan watch.Event, <-chan watch.Event, error) {
 	podWatcher, err := client.CoreV1().Pods(corev1.NamespaceAll).Watch(metav1.ListOptions{})
 	if err != nil {
+		log.Print("create pods wathcer failed")
 		return nil, nil, nil, err
 	}
 	serviceWatcher, err := client.CoreV1().Services(corev1.NamespaceAll).Watch(metav1.ListOptions{})
 	if err != nil {
+		log.Print("create service wathcer failed")
 		return nil, nil, nil, err
 	}
 	deploymentWatcher, err := client.AppsV1().Deployments(corev1.NamespaceAll).Watch(metav1.ListOptions{})
 	if err != nil {
+		log.Print("create deployment wathcer failed")
 		return nil, nil, nil, err
 	}
 
