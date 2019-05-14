@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -19,22 +20,28 @@ func getAccessToken(c *http.Client, backendURL, id, token string) string {
 		"token": token,
 	}
 
-	data, _ := json.Marshal(dataJSON)
+	var accessTokenURL string
+	if strings.HasSuffix(backendURL, "/") {
+		accessTokenURL = backendURL + "accesstoken"
+	} else {
+		accessTokenURL = backendURL + "/accesstoken"
+	}
+	postData, _ := json.Marshal(dataJSON)
 	post := func() (string, error) {
-		resp, err := c.Post(backendURL, "application/json", bytes.NewReader(data))
+		resp, err := c.Post(accessTokenURL, "application/json", bytes.NewReader(postData))
 		if err != nil {
 			return "", errors.New("get access token,post error:" + err.Error())
 		}
 		defer resp.Body.Close()
 
-		data, err := ioutil.ReadAll(resp.Body)
+		respData, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return "", err
 		}
 
 		respJSON := make(map[string]string)
-		if err := json.Unmarshal(data, respJSON); err != nil {
-			log.Print("resp:", string(data))
+		if err := json.Unmarshal(respData, &respJSON); err != nil {
+			log.Println("json unmarshal error,resp:", string(respData))
 			return "", err
 		}
 

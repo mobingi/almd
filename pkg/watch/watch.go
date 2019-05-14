@@ -27,7 +27,7 @@ func Watch(id, token string) error {
 	httpClient := newHTTPClient()
 	backendURL := pkgutil.ReadEnvOrDie(backendURLEnv)
 	accessToken := getAccessToken(httpClient, backendURL, id, token)
-	log.Print("get access token sucess")
+	log.Println("get access token sucess:", accessToken)
 
 	podEventChan, serviceEventChan, deploymentEventChan, err := newEventChans(client)
 	if err != nil {

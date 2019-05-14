@@ -44,7 +44,7 @@ metadata:
   namespace: kube-system
 data: 
   config.yaml: |-
-    id: rootuser-subuser
+    id: fde0562b23e352a1-anstns
     token: token
     templateName: templateName
     clusterName: clusterName

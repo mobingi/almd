@@ -59,7 +59,7 @@ func newPostBody(client clientset.Interface) *postPayload {
 func createRequest(backendURL, token string, data []byte) *http.Request {
 	authorzation := fmt.Sprintf("Bearer %s", token)
 	header := map[string][]string{
-		"Authorization": {authorzation},
+		"X-Authorization": {authorzation},
 	}
 	req, err := http.NewRequest(http.MethodPost, backendURL, bytes.NewReader(data))
 	if err != nil {
